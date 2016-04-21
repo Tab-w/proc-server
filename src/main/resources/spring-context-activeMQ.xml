@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:cache="http://www.springframework.org/schema/cache"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:oxm="http://www.springframework.org/schema/oxm" xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:tool="http://www.springframework.org/schema/tool" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/cache
+        http://www.springframework.org/schema/cache/spring-cache.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/jdbc
+        http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/oxm
+        http://www.springframework.org/schema/oxm/spring-oxm.xsd
+        http://www.springframework.org/schema/task
+        http://www.springframework.org/schema/task/spring-task.xsd
+        http://www.springframework.org/schema/tool
+        http://www.springframework.org/schema/tool/spring-tool.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util.xsd">
+	<context:component-scan base-package="com.hlsq.elib.proc.service"></context:component-scan>
+
+	<bean id="queueJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<!-- 这个connectionFactory对应的是我们定义的Spring提供的那个ConnectionFactory对象 -->
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="receiveTimeout" value="1000" />
+	</bean>
+
+	<!-- Spring用于管理真正的ConnectionFactory的ConnectionFactory -->
+	<bean id="connectionFactory"
+		class="org.springframework.jms.connection.CachingConnectionFactory ">
+		<!-- 目标ConnectionFactory对应真实的可以产生JMS Connection的ConnectionFactory -->
+		<property name="targetConnectionFactory" ref="targetConnectionFactory" />
+	</bean>
+
+	<!-- 真正可以产生Connection的ConnectionFactory，由对应的 JMS服务厂商提供 -->
+	<bean id="targetConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<!-- jms.prefetchPolicy.all=2可以是消费端平均分配不至于一个慢死一个闲死 -->
+		<property name="brokerURL"
+			value="failover://(tcp://127.0.0.1:61616)?initialReconnectDelay=100&amp;jms.prefetchPolicy.all=2" />
+		<!-- 指定异步发送消息 -->
+		<property name="useAsyncSend" value="true" />
+	</bean>
+
+
+	<!--这个是队列目的地 -->
+	<!-- 负责通知转换服务器有文件需要转换 -->
+	<bean id="notifyDestination" class="org.apache.activemq.command.ActiveMQTopic">
+		<constructor-arg value="notify" />
+	</bean>
+	<!-- 存放要转换文件的详细信息 -->
+	<bean id="convertDestination" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg value="convert" />
+	</bean>
+
+	<!-- 消息监听器 -->
+	<bean id="notifyDestinationListener" class="com.hlsq.elib.proc.listener.NotifyListener" />
+
+	<!-- 消息监听容器 -->
+	<bean id="notifyDestinationListenerContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="destination" ref="notifyDestination" />
+		<property name="messageListener" ref="notifyDestinationListener" />
+		<!-- 是否同步接收消息 -->
+		<!-- <property name="replyPubSubDomain" value="true" /> -->
+	</bean>
+
+	<!-- 线程池 -->
+	<bean id="threadPool" class="com.hlsq.elib.proc.util.ThreadPool">
+		<!-- 线程池中线程的个数 -->
+		<property name="worker_num" value="2" />
+	</bean>
+</beans>
