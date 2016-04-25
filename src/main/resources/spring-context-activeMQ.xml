@@ -30,26 +30,30 @@
         http://www.springframework.org/schema/tx/spring-tx.xsd
         http://www.springframework.org/schema/util
         http://www.springframework.org/schema/util/spring-util.xsd">
+	<!-- 加载配置属性文件 -->
+	<context:property-placeholder
+		ignore-unresolvable="true" location="classpath:app.properties" />
+
 	<context:component-scan base-package="com.hlsq.elib.proc.service"></context:component-scan>
 
 	<bean id="queueJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
 		<!-- 这个connectionFactory对应的是我们定义的Spring提供的那个ConnectionFactory对象 -->
 		<property name="connectionFactory" ref="connectionFactory" />
-		<property name="receiveTimeout" value="1000" />
+		<property name="receiveTimeout" value="${connection.receiveTimeout}" />
 	</bean>
 
 	<!-- Spring用于管理真正的ConnectionFactory的ConnectionFactory -->
 	<bean id="connectionFactory"
-		class="org.springframework.jms.connection.CachingConnectionFactory ">
+		class="org.springframework.jms.connection.CachingConnectionFactory">
 		<!-- 目标ConnectionFactory对应真实的可以产生JMS Connection的ConnectionFactory -->
 		<property name="targetConnectionFactory" ref="targetConnectionFactory" />
 	</bean>
 
 	<!-- 真正可以产生Connection的ConnectionFactory，由对应的 JMS服务厂商提供 -->
 	<bean id="targetConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property name="clientID" value="${clientID}" />
 		<!-- jms.prefetchPolicy.all=2可以是消费端平均分配不至于一个慢死一个闲死 -->
-		<property name="brokerURL"
-			value="failover://(tcp://127.0.0.1:61616)?initialReconnectDelay=100&amp;jms.prefetchPolicy.all=2" />
+		<property name="brokerURL" value="${activeMQ.brokerURL}" />
 		<!-- 指定异步发送消息 -->
 		<property name="useAsyncSend" value="true" />
 	</bean>
@@ -72,6 +76,10 @@
 	<bean id="notifyDestinationListenerContainer"
 		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
 		<property name="connectionFactory" ref="connectionFactory" />
+		<!-- 发布订阅模式 -->
+		<property name="pubSubDomain" value="true" />
+		<property name="clientId" value="${clientID}" />
+		<property name="durableSubscriptionName" value="${clientID}" />
 		<property name="destination" ref="notifyDestination" />
 		<property name="messageListener" ref="notifyDestinationListener" />
 		<!-- 是否同步接收消息 -->
@@ -81,6 +89,6 @@
 	<!-- 线程池 -->
 	<bean id="threadPool" class="com.hlsq.elib.proc.util.ThreadPool">
 		<!-- 线程池中线程的个数 -->
-		<property name="worker_num" value="2" />
+		<property name="worker_num" value="${threadPool.worker_num}" />
 	</bean>
 </beans>
