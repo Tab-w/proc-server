@@ -43,17 +43,27 @@ public class FileProcessing {
 		this.runtime = Runtime.getRuntime();
 		this.OS = OS;
 		try {
-			if (infoFile != "" && errFile != "") {
+			if (infoFile != "") {
 				File fileInfo = new File(infoFile);
 				if (!fileInfo.exists()) {
 					fileInfo.createNewFile();
 				}
+				if (fileInfo.exists()) {
+					this.infoFile = infoFile;
+				} else {
+					log.info("info日志文件没有创建成功");
+				}
+			}
+			if (errFile != "") {
 				File fileErr = new File(errFile);
 				if (!fileErr.exists()) {
 					fileErr.createNewFile();
 				}
-				this.infoFile = infoFile;
-				this.errFile = errFile;
+				if (fileErr.exists()) {
+					this.errFile = errFile;
+				} else {
+					log.info("err日志文件没有创建成功");
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -120,6 +130,7 @@ public class FileProcessing {
 		wirteToLog(process, infoFile, errFile, fileName, timeout, pidFilePath);
 		process.waitFor();
 		int exitValue = process.exitValue();
+		// 判断process是否正常退出0:正常
 		if (exitValue == 0) {
 			if (status == -100) {
 				status = 1;
@@ -198,7 +209,9 @@ public class FileProcessing {
 		process = runtime.exec(commandList.toArray(new String[] {}));
 		wirteToLog(process, infoFile, errFile, fileName, timeout, pidFilePath);
 		process.waitFor();
-		if (process.exitValue() == 0) {
+		int exitValue = process.exitValue();
+		// 判断process是否正常退出0:正常
+		if (exitValue == 0) {
 			if (status == -100) {
 				status = 1;
 			}
@@ -276,7 +289,9 @@ public class FileProcessing {
 		process = runtime.exec(commandList.toArray(new String[] {}));
 		wirteToLog(process, infoFile, errFile, fileName, timeout, pidFilePath);
 		process.waitFor();
-		if (process.exitValue() == 0) {
+		int exitValue = process.exitValue();
+		// 判断process是否正常退出0:正常
+		if (exitValue == 0) {
 			if (status == -100) {
 				status = 1;
 			}
@@ -378,7 +393,9 @@ public class FileProcessing {
 							}
 						}
 					}
-					fwErr.close();
+					if (fwErr != null) {
+						fwErr.close();
+					}
 					brErr.close();
 					isrErr.close();
 					isErr.close();
@@ -410,7 +427,9 @@ public class FileProcessing {
 							}
 						}
 					}
-					fwInfo.close();
+					if (fwInfo != null) {
+						fwInfo.close();
+					}
 					brInfo.close();
 					isrInfo.close();
 					isInfo.close();
@@ -488,9 +507,13 @@ public class FileProcessing {
 			comandList.add("/s/q");
 			comandList.add(dirPath);
 		} else {
-			comandList.add("rm");
-			comandList.add("-rf");
-			comandList.add(dirPath);
+			if (!dirPath.equals("/") && !dirPath.equals("")) {
+				comandList.add("rm");
+				comandList.add("-rf");
+				comandList.add(dirPath);
+			} else {
+				log.info("危险操作:不能删除根目录");
+			}
 		}
 		runtime.exec(comandList.toArray(new String[] {}));
 	}
