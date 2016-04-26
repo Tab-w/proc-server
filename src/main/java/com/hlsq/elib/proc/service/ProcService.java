@@ -28,6 +28,8 @@ public class ProcService {
 	 *            err文件路径
 	 * @param OS
 	 *            操作系统,example:"windows","linux"
+	 * @param isPrintToLog
+	 *            是否把cmd控制台的信息打印到日志里
 	 * @throws IOException
 	 * @throws InterruptedException
 	 * @throws IllegalAccessException
@@ -36,8 +38,8 @@ public class ProcService {
 	 * @throws NoSuchFieldException
 	 */
 	public int splitPdf(String pdfOutputPath, String inputPath, long timeout, String infoFile, String errFile,
-			String OS) throws IOException, InterruptedException, NoSuchFieldException, SecurityException,
-			IllegalArgumentException, IllegalAccessException {
+			String OS, boolean isPrintToLog) throws IOException, InterruptedException, NoSuchFieldException,
+			SecurityException, IllegalArgumentException, IllegalAccessException {
 		int status = -100;
 		FileProcessing fileProcessing = new FileProcessing(OS, infoFile, errFile);
 		File file = new File(inputPath);
@@ -48,7 +50,7 @@ public class ProcService {
 					long start = System.currentTimeMillis();
 					String inputFile = f.getAbsolutePath();
 					String notExtName = FileUtil.getNotExtName(inputFile);
-					status = fileProcessing.splitToPdf(inputFile, pdfOutputPath, timeout);
+					status = fileProcessing.splitToPdf(inputFile, pdfOutputPath, timeout, isPrintToLog);
 					long total = System.currentTimeMillis() - start;
 					log.info("拆分Pdf====" + notExtName + "; status:" + status + "; time:" + total);
 					if (status != 1) {
@@ -60,7 +62,7 @@ public class ProcService {
 			if (FileUtil.getExt(inputPath).equals(".pdf")) {
 				long start = System.currentTimeMillis();
 				String notExtName = FileUtil.getNotExtName(inputPath);
-				status = fileProcessing.splitToPdf(inputPath, pdfOutputPath, timeout);
+				status = fileProcessing.splitToPdf(inputPath, pdfOutputPath, timeout, isPrintToLog);
 				long total = System.currentTimeMillis() - start;
 				log.info("拆分Pdf====" + notExtName + "; status:" + status + "; time:" + total);
 				if (status != 1) {
@@ -85,6 +87,8 @@ public class ProcService {
 	 *            err文件路径
 	 * @param OS
 	 *            操作系统,example:"windows","linux"
+	 * @param isPrintToLog
+	 *            是否把cmd控制台的信息打印到日志里
 	 * @throws IOException
 	 * @throws InterruptedException
 	 * @throws IllegalAccessException
@@ -93,8 +97,8 @@ public class ProcService {
 	 * @throws NoSuchFieldException
 	 */
 	public int convertToJson(String jsonOutputPath, String inputPath, long timeout, String infoFile, String errFile,
-			String OS) throws IOException, InterruptedException, NoSuchFieldException, SecurityException,
-			IllegalArgumentException, IllegalAccessException {
+			String OS, boolean isPrintToLog) throws IOException, InterruptedException, NoSuchFieldException,
+			SecurityException, IllegalArgumentException, IllegalAccessException {
 		int status = -100;
 		FileProcessing fileProcessing = new FileProcessing(OS, infoFile, errFile);
 		File file = new File(inputPath);
@@ -105,7 +109,7 @@ public class ProcService {
 					String inputFile = f.getAbsolutePath();
 					long start = System.currentTimeMillis();
 					String notExtName = FileUtil.getNotExtName(inputFile);
-					status = fileProcessing.convertToJson(inputFile, jsonOutputPath, timeout);
+					status = fileProcessing.convertToJson(inputFile, jsonOutputPath, timeout, isPrintToLog);
 					long total = System.currentTimeMillis() - start;
 					log.info("转换Json====" + notExtName + "; status:" + status + "; time:" + total);
 					if (status != 1) {
@@ -117,7 +121,7 @@ public class ProcService {
 			if (FileUtil.getExt(inputPath).equals(".pdf")) {
 				long start = System.currentTimeMillis();
 				String notExtName = FileUtil.getNotExtName(inputPath);
-				status = fileProcessing.convertToJson(inputPath, jsonOutputPath, timeout);
+				status = fileProcessing.convertToJson(inputPath, jsonOutputPath, timeout, isPrintToLog);
 				long total = System.currentTimeMillis() - start;
 				log.info("转换Json====" + notExtName + "; status:" + status + "; time:" + total);
 				if (status != 1) {
@@ -142,6 +146,8 @@ public class ProcService {
 	 *            err文件路径
 	 * @param OS
 	 *            操作系统,example:"windows","linux"
+	 * @param isPrintToLog
+	 *            是否把cmd控制台的信息打印到日志里
 	 * @throws IOException
 	 * @throws InterruptedException
 	 * @throws IllegalAccessException
@@ -150,8 +156,8 @@ public class ProcService {
 	 * @throws NoSuchFieldException
 	 */
 	public int convertToSwf(String swfOutputPath, String inputPath, long timeout, String infoFile, String errFile,
-			String OS) throws IOException, InterruptedException, NoSuchFieldException, SecurityException,
-			IllegalArgumentException, IllegalAccessException {
+			String OS, boolean isPrintToLog) throws IOException, InterruptedException, NoSuchFieldException,
+			SecurityException, IllegalArgumentException, IllegalAccessException {
 		int status = -100;
 		FileProcessing fileProcessing = new FileProcessing(OS, infoFile, errFile);
 		File file = new File(inputPath);
@@ -162,7 +168,7 @@ public class ProcService {
 					String inputFile = f.getAbsolutePath();
 					long start = System.currentTimeMillis();
 					String notExtName = FileUtil.getNotExtName(inputFile);
-					status = fileProcessing.convertToSwf(inputFile, swfOutputPath, timeout);
+					status = fileProcessing.convertToSwf(inputFile, swfOutputPath, timeout, isPrintToLog);
 					long total = System.currentTimeMillis() - start;
 					log.info("转换Swf====" + notExtName + "; status:" + status + "; time:" + total);
 					if (status != 1) {
@@ -174,7 +180,7 @@ public class ProcService {
 			if (FileUtil.getExt(inputPath).equals(".pdf")) {
 				long start = System.currentTimeMillis();
 				String notExtName = FileUtil.getNotExtName(inputPath);
-				status = fileProcessing.convertToSwf(inputPath, swfOutputPath, timeout);
+				status = fileProcessing.convertToSwf(inputPath, swfOutputPath, timeout, isPrintToLog);
 				long total = System.currentTimeMillis() - start;
 				log.info("转换Swf====" + notExtName + "; status:" + status + "; time:" + total);
 				if (status != 1) {

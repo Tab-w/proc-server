@@ -11,6 +11,7 @@ import javax.jms.Session;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.listener.SessionAwareMessageListener;
 
 import com.hlsq.elib.proc.service.ProcService;
@@ -26,6 +27,8 @@ public class NotifyListener implements SessionAwareMessageListener<ObjectMessage
 	private ProcService procService;
 	@Autowired
 	private ProducerService producerService;
+	@Value("#{APP_PROP['isPrintToLog']}")
+	private boolean isPrintToLog;
 	private Logger log = Logger.getLogger(NotifyListener.class);
 
 	public void onMessage(ObjectMessage message, Session session) throws JMSException {
@@ -46,21 +49,23 @@ public class NotifyListener implements SessionAwareMessageListener<ObjectMessage
 										info.get("inputPath").toString(),
 										Integer.parseInt(info.get("pdfTimeout").toString()),
 										info.get("splitPdfInfoFile").toString(), info.get("splitPdfErrFile").toString(),
-										info.get("os").toString());
+										info.get("os").toString(), isPrintToLog);
 								if (status == 1) {
 									log.info("准备转换Json:" + info.get("inputPath"));
 									status = procService.convertToJson(info.get("jsonOutputPath").toString(),
 											info.get("inputPath").toString(),
 											Integer.parseInt(info.get("jsonTimeout").toString()),
 											info.get("convertToJsonInfoFile").toString(),
-											info.get("convertToJsonErrFile").toString(), info.get("os").toString());
+											info.get("convertToJsonErrFile").toString(), info.get("os").toString(),
+											isPrintToLog);
 									if (status == 1) {
 										log.info("准备拆分Swf:" + info.get("inputPath"));
 										status = procService.convertToSwf(info.get("swfOutputPath").toString(),
 												info.get("inputPath").toString(),
 												Integer.parseInt(info.get("swfTimeout").toString()),
 												info.get("convertToSwfInfoFile").toString(),
-												info.get("convertToSwfErrFile").toString(), info.get("os").toString());
+												info.get("convertToSwfErrFile").toString(), info.get("os").toString(),
+												isPrintToLog);
 										if (status == 1) {
 											// 转换成功
 											Map<String, Object> returnMap = new HashMap<String, Object>();

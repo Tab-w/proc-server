@@ -46,6 +46,10 @@ public class FileProcessing {
 			if (infoFile != "") {
 				File fileInfo = new File(infoFile);
 				if (!fileInfo.exists()) {
+					File parentDir = new File(fileInfo.getParent());
+					if (!parentDir.exists()) {
+						parentDir.mkdirs();
+					}
 					fileInfo.createNewFile();
 				}
 				if (fileInfo.exists()) {
@@ -57,6 +61,10 @@ public class FileProcessing {
 			if (errFile != "") {
 				File fileErr = new File(errFile);
 				if (!fileErr.exists()) {
+					File parentDir = new File(fileErr.getParent());
+					if (!parentDir.exists()) {
+						parentDir.mkdirs();
+					}
 					fileErr.createNewFile();
 				}
 				if (fileErr.exists()) {
@@ -79,6 +87,8 @@ public class FileProcessing {
 	 *            输出目录
 	 * @param timeout
 	 *            超时限制
+	 * @param isPrintToLog
+	 *            是否把cmd控制台的信息打印到日志里
 	 * @return
 	 * @throws IOException
 	 * @throws InterruptedException
@@ -87,7 +97,8 @@ public class FileProcessing {
 	 * @throws SecurityException
 	 * @throws NoSuchFieldException
 	 */
-	public int splitToPdf(String inputFile, String outputPath, long timeout) throws IOException, InterruptedException {
+	public int splitToPdf(String inputFile, String outputPath, long timeout, boolean isPrintToLog)
+			throws IOException, InterruptedException {
 
 		String notExtName = FileUtil.getNotExtName(inputFile);
 		String fileName = FileUtil.getFileName(inputFile);
@@ -127,7 +138,7 @@ public class FileProcessing {
 		// 设置成默认值
 		status = -100;
 		process = runtime.exec(commandList.toArray(new String[] {}));
-		wirteToLog(process, infoFile, errFile, fileName, timeout, pidFilePath);
+		wirteToLog(process, infoFile, errFile, fileName, timeout, pidFilePath, isPrintToLog);
 		process.waitFor();
 		int exitValue = process.exitValue();
 		// 判断process是否正常退出0:正常
@@ -153,6 +164,8 @@ public class FileProcessing {
 	 *            输出目录
 	 * @param timeout
 	 *            超时限制
+	 * @param isPrintToLog
+	 *            是否把cmd控制台的信息打印到日志里
 	 * @return
 	 * @throws IOException
 	 * @throws InterruptedException
@@ -161,7 +174,7 @@ public class FileProcessing {
 	 * @throws SecurityException
 	 * @throws NoSuchFieldException
 	 */
-	public int convertToJson(String inputFile, String outputPath, long timeout)
+	public int convertToJson(String inputFile, String outputPath, long timeout, boolean isPrintToLog)
 			throws IOException, InterruptedException {
 
 		String notExtName = FileUtil.getNotExtName(inputFile);
@@ -207,7 +220,7 @@ public class FileProcessing {
 		// 设置成默认值
 		status = -100;
 		process = runtime.exec(commandList.toArray(new String[] {}));
-		wirteToLog(process, infoFile, errFile, fileName, timeout, pidFilePath);
+		wirteToLog(process, infoFile, errFile, fileName, timeout, pidFilePath, isPrintToLog);
 		process.waitFor();
 		int exitValue = process.exitValue();
 		// 判断process是否正常退出0:正常
@@ -233,6 +246,8 @@ public class FileProcessing {
 	 *            输出目录
 	 * @param timeout
 	 *            超时限制
+	 * @param isPrintToLog
+	 *            是否把cmd控制台的信息打印到日志里
 	 * @return
 	 * @throws IOException
 	 * @throws InterruptedException
@@ -241,7 +256,7 @@ public class FileProcessing {
 	 * @throws IllegalAccessException
 	 * @throws IllegalArgumentException
 	 */
-	public int convertToSwf(String inputFile, String outputPath, long timeout)
+	public int convertToSwf(String inputFile, String outputPath, long timeout, boolean isPrintToLog)
 			throws IOException, InterruptedException {
 
 		String notExtName = FileUtil.getNotExtName(inputFile);
@@ -287,7 +302,7 @@ public class FileProcessing {
 		// 设置成默认值
 		status = -100;
 		process = runtime.exec(commandList.toArray(new String[] {}));
-		wirteToLog(process, infoFile, errFile, fileName, timeout, pidFilePath);
+		wirteToLog(process, infoFile, errFile, fileName, timeout, pidFilePath, isPrintToLog);
 		process.waitFor();
 		int exitValue = process.exitValue();
 		// 判断process是否正常退出0:正常
@@ -359,7 +374,7 @@ public class FileProcessing {
 	 * @throws IllegalArgumentException
 	 */
 	public void wirteToLog(Process process, String infoFile, String errFile, String fileName, long timeout,
-			String pidFilePath) {
+			String pidFilePath, boolean isPrintToLog) {
 		Thread threadErr = new Thread(new Runnable() {
 			public void run() {
 				try {
@@ -384,7 +399,9 @@ public class FileProcessing {
 							status = -1;
 						}
 						lineErr = " [" + fileName + "----ERROR]  " + lineErr;
-						log.info(lineErr);
+						if (isPrintToLog) {
+							log.info(lineErr);
+						}
 						// 写入日志文件
 						if (fwErr != null) {
 							synchronized (fwErr) {
@@ -418,7 +435,9 @@ public class FileProcessing {
 							status = 0;
 						}
 						lineInfo = " [" + fileName + "----INFO]  " + lineInfo;
-						log.info(lineInfo);
+						if (isPrintToLog) {
+							log.info(lineInfo);
+						}
 						// 写入日志文件
 						if (fwInfo != null) {
 							synchronized (fwInfo) {

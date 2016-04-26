@@ -33,6 +33,10 @@
 	<!-- 加载配置属性文件 -->
 	<context:property-placeholder
 		ignore-unresolvable="true" location="classpath:app.properties" />
+	<!-- 加载应用属性实例，可通过 @Value("#{APP_PROP['jdbc.driver']}") String jdbcDriver 
+		方式引用 -->
+	<util:properties id="APP_PROP" location="classpath:app.properties"
+		local-override="true" />
 
 	<context:component-scan base-package="com.hlsq.elib.proc.service"></context:component-scan>
 
